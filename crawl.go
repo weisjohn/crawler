@@ -7,6 +7,7 @@ for my competitor track website thingie
 package main
 
 import (
+	"crypto/sha1"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -21,7 +22,7 @@ func bolt(message string) {
 
 // this is a simple map of urls to md5 hashes
 // to see if content has changed
-var visited = make(map[string]int)
+var visited = make(map[string]string)
 
 func Crawl(url string) {
 
@@ -37,15 +38,25 @@ func Crawl(url string) {
 		return
 	}
 
-	// read the body of the page
+	// read the body of the page into a
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("Error reading body", url, err)
 		return
 	}
 
+	// debugging
 	fmt.Println("body")
 	fmt.Println(string(body))
+
+	// get the SHA1 of that content
+	hash := sha1.New()
+	hash.Write(body)
+	bodysha := hash.Sum(nil)
+
+	// once we have the sha1, put it into the map
+	// this helps us not refetch, and also we'll persist this later (in the db)
+	visited[url] = fmt.Sprintf("%x", bodysha)
 
 }
 
