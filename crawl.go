@@ -46,10 +46,6 @@ func Crawl(url string) {
 	}
 	defer resp.Body.Close()
 
-	// debugging
-	fmt.Println("body")
-	fmt.Println(string(body))
-
 	// get the SHA1 of that content
 	hash := sha1.New()
 	hash.Write(body)
@@ -58,6 +54,9 @@ func Crawl(url string) {
 	// once we have the sha1, put it into the map
 	// this helps us not refetch, and also we'll persist this later (in the db)
 	visited[url] = fmt.Sprintf("%x", bodysha)
+
+	// TODO: find links
+	// TODO: don't follow links that don't match this domain, or something like that...
 
 }
 
@@ -69,6 +68,7 @@ func main() {
 		bolt("You must pass a valid URL")
 	}
 
+	// grab the URL they sent in
 	first := args[1]
 
 	_, err := url.ParseRequestURI(first)
