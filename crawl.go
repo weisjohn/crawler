@@ -44,6 +44,7 @@ func Crawl(url string) {
 		fmt.Printf("Error reading body", url, err)
 		return
 	}
+	defer resp.Body.Close()
 
 	// debugging
 	fmt.Println("body")
