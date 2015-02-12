@@ -55,7 +55,8 @@ func Crawl(url string) {
 	// this helps us not refetch, and also we'll persist this later (in the db)
 	visited[url] = fmt.Sprintf("%x", bodysha)
 
-	// TODO: find links
+	// TODO: fork https://github.com/JackDanger/collectlinks/ into something else
+	// TODO: find links, js, css, img, picture
 	// TODO: don't follow links that don't match this domain, or something like that...
 
 }
