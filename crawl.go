@@ -1,5 +1,5 @@
 /*
-Package crawler creates a very simple web crawler which generates sha1 hashes
+Package crawler recursively crawls a URL returning a `map[string]string` of with URIs as keys and sha1 hashes as values.
 */
 
 package crawler
@@ -122,13 +122,6 @@ func resolveRefs(refs []Resource, s string) []Resource {
 // this is a simple map of urls to sha1 hashes
 var visited map[string]string
 
-// exposed function
-func Crawl(url string) map[string]string {
-	visited = make(map[string]string)
-	crawl(url, "")
-	return visited
-}
-
 func crawl(url, contenttype string) {
 
 	// if we have already visited it, bounce
@@ -175,4 +168,11 @@ func crawl(url, contenttype string) {
 
 	return
 
+}
+
+// Crawl recusively crawls a URI returning a map of URIs to sha1 hashes.
+func Crawl(uri string) map[string]string {
+	visited = make(map[string]string)
+	crawl(uri, "")
+	return visited
 }
