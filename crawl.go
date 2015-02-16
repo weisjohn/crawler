@@ -30,9 +30,9 @@ func divine(contenttype, header string) string {
 	header = strings.Split(header, ";")[0]
 
 	// if the contenttype is not explicitly set, determine from header
-	if contenttype != header {
-		fmt.Printf("content-type: %q != server-sent: %q\n", contenttype, header)
-	}
+	// if contenttype != header {
+	// 	fmt.Printf("content-type: %q != server-sent: %q\n", contenttype, header)
+	// }
 
 	if contenttype != "" {
 		return contenttype
@@ -72,6 +72,8 @@ type Resource struct{ URI, Type string }
 func getRefs(contenttype string, httpBody io.Reader) []Resource {
 
 	resources := make([]Resource, 0)
+
+	// TODO: expand
 
 	switch contenttype {
 	case "html":
@@ -143,16 +145,28 @@ func Crawl(url, contenttype string) {
 	// resolve to full-urls
 	refs = resolveRefs(refs, url)
 
-	for _, ref := range refs {
-		fmt.Println(ref)
-	}
-
 	// once we have the sha1, put it into the map
 	// this helps us not refetch, and also we'll persist this later (in the db)
 	visited[url] = hashBody(resp.Body, url)
 	defer resp.Body.Close()
 
-	// TODO: recursion: fan out, fan in
+	// use a simply bool channel to fan out
+	done := make(chan bool)
+
+	// fan out, recursion
+	for _, ref := range refs {
+		go func(ref Resource) {
+			Crawl(ref.URI, ref.Type)
+			done <- true
+		}(ref)
+	}
+
+	// sync back up
+	for _, _ = range refs {
+		<-done
+	}
+
+	return
 
 }
 
@@ -173,5 +187,9 @@ func main() {
 	}
 
 	Crawl(first, "")
-	fmt.Println(visited)
+
+	for u, v := range visited {
+		fmt.Println(v, u)
+	}
+
 }
