@@ -84,6 +84,38 @@ func getRefs(contenttype string, httpBody io.Reader) []Resource {
 	return resources
 }
 
+// rather than cutting out of the previous slice, we have to normalize all URLs anyways
+func resolveRefs(refs []Resource, s string) []Resource {
+
+	// use
+	u, err := url.Parse(s)
+	if err != nil {
+		bolt("problem parsing url")
+	}
+
+	resources := make([]Resource, 0)
+
+	for _, ref := range refs {
+
+		// all uris must be content-bearing
+		uri := ref.URI
+		if uri == "" {
+			uri = "/"
+		}
+
+		r, err := u.Parse(uri)
+		if err != nil {
+			fmt.Println("problem resolving", ref.URI)
+		}
+
+		// check if the hosts are the same
+		if r.Host == u.Host {
+			resources = append(resources, Resource{URI: r.String(), Type: ref.Type})
+		}
+	}
+	return resources
+}
+
 // this is a simple map of urls to sha1 hashes
 var visited = make(map[string]string)
 
@@ -107,6 +139,9 @@ func Crawl(url, contenttype string) {
 	// grab the refs depending on the type of content
 	refs := getRefs(contenttype, resp.Body)
 
+	// resolve to full-urls
+	refs = resolveRefs(refs, url)
+
 	for _, ref := range refs {
 		fmt.Println(ref)
 	}
@@ -115,7 +150,6 @@ func Crawl(url, contenttype string) {
 	// this helps us not refetch, and also we'll persist this later (in the db)
 	visited[url] = hashBody(resp.Body, url)
 	defer resp.Body.Close()
-	// TODO: don't follow links that don't match this domain, or something like that...
 
 	// TODO: recursion: fan out, fan in
 
