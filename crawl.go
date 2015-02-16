@@ -85,6 +85,7 @@ func getRefs(contenttype string, httpBody io.Reader) []Resource {
 }
 
 // rather than cutting out of the previous slice, we have to normalize all URLs anyways
+// so just create a new map of resources and return it
 func resolveRefs(refs []Resource, s string) []Resource {
 
 	// use
@@ -108,8 +109,8 @@ func resolveRefs(refs []Resource, s string) []Resource {
 			fmt.Println("problem resolving", ref.URI)
 		}
 
-		// check if the hosts are the same
-		if r.Host == u.Host {
+		// for html, hosts must be the same, otherwise add
+		if ref.Type != "html" || (ref.Type == "html" && r.Host == u.Host) {
 			resources = append(resources, Resource{URI: r.String(), Type: ref.Type})
 		}
 	}
