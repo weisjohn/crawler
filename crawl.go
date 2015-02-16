@@ -1,7 +1,5 @@
 /*
-Package crawler creates a very simple web crawler
-that is made for demo usage. This could evolve into the backend
-for my competitor track website thingie
+Package crawler creates a very simple web crawler which generates sha1 hashes
 */
 
 package main
@@ -20,8 +18,7 @@ func bolt(message string) {
 	os.Exit(1)
 }
 
-// this is a simple map of urls to md5 hashes
-// to see if content has changed
+// this is a simple map of urls to sha1 hashes
 var visited = make(map[string]string)
 
 func Crawl(url string) {
@@ -38,7 +35,7 @@ func Crawl(url string) {
 		return
 	}
 
-	// read the body of the page into a
+	// read the body of the page into a string
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("Error reading body", url, err)
@@ -46,7 +43,7 @@ func Crawl(url string) {
 	}
 	defer resp.Body.Close()
 
-	// get the SHA1 of that content
+	// get sha1 of that content
 	hash := sha1.New()
 	hash.Write(body)
 	bodysha := hash.Sum(nil)
