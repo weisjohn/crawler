@@ -2,7 +2,7 @@
 Package crawler creates a very simple web crawler which generates sha1 hashes
 */
 
-package main
+package crawler
 
 import (
 	"crypto/sha1"
@@ -120,9 +120,16 @@ func resolveRefs(refs []Resource, s string) []Resource {
 }
 
 // this is a simple map of urls to sha1 hashes
-var visited = make(map[string]string)
+var visited map[string]string
 
-func Crawl(url, contenttype string) {
+// exposed function
+func Crawl(url string) map[string]string {
+	visited = make(map[string]string)
+	crawl(url, "")
+	return visited
+}
+
+func crawl(url, contenttype string) {
 
 	// if we have already visited it, bounce
 	if _, ok := visited[url]; ok {
@@ -156,7 +163,7 @@ func Crawl(url, contenttype string) {
 	// fan out, recursion
 	for _, ref := range refs {
 		go func(ref Resource) {
-			Crawl(ref.URI, ref.Type)
+			crawl(ref.URI, ref.Type)
 			done <- true
 		}(ref)
 	}
@@ -167,29 +174,5 @@ func Crawl(url, contenttype string) {
 	}
 
 	return
-
-}
-
-func main() {
-
-	// preflight checks
-	args := os.Args
-	if len(args) < 2 {
-		bolt("You must pass a valid URL")
-	}
-
-	// grab the URL they sent in
-	first := args[1]
-
-	_, err := url.ParseRequestURI(first)
-	if err != nil {
-		bolt("You must pass a valid URL")
-	}
-
-	Crawl(first, "")
-
-	for u, v := range visited {
-		fmt.Println(v, u)
-	}
 
 }
