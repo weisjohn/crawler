@@ -14,6 +14,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/weisjohn/cssrefs"
 	"github.com/weisjohn/htmlrefs"
 )
 
@@ -80,6 +81,11 @@ func getRefs(contenttype string, httpBody io.Reader) []Resource {
 		refs := htmlrefs.All(httpBody)
 		for _, ref := range refs {
 			resources = append(resources, Resource{URI: ref.URI, Type: resourcemap[ref.Token]})
+		}
+	case "css":
+		refs := cssrefs.All(httpBody)
+		for _, ref := range refs {
+			resources = append(resources, Resource{URI: ref.URI, Type: ref.Token})
 		}
 	}
 
